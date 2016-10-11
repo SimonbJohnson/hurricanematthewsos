@@ -2,14 +2,14 @@ $('#viz').hide();
 
 var config = {
     HXLProxyURL:'https://proxy.hxlstandard.org/data.json?strip-headers=on&url=https%3A//docs.google.com/spreadsheets/d/1QA0UGOJtk5pJ-0oY2-V0iXs21SGS5Qz51Ns8i3QP1UA/edit%23gid%3D0',
-    geomURL:'data/syria_adm2.json',
-    topojson:'syria_adm2',
-    color:'#D32F2F',
-    mapcolors:['#DDDDDD','#E57373','#F44336','#D32F2F','#B71C1C'],
-    mapboundaries:[5,10,20],
-    joinattr:'PCODE',
-    popupattr:'NAME_EN',
-    title:'Hurricane Matthew Survey of Surveys',
+    geomURL:'data/hti_adm2_topo.json',
+    topojson:'hti_adm2',
+    color:'#008080',
+    mapcolors:['#dddddd','#80CBC4','#26A69A','#00796B','#004D40'],
+    mapboundaries:[1,2,5],
+    joinattr:'admin2name',
+    popupattr:'admin2name',
+    title:'Survey of survey / Registre des evaluations de besoins HAITI ouragan Matthew',
     description:'Description Text',
     admlevel:'',
     weeks:true
@@ -107,7 +107,7 @@ function initDashboard(data,time,geom){
             .colorAccessor(function (d) {
                 return 1;
             }) 
-        .labelOffsetY(25)
+        .labelOffsetY(20)
         .elasticX(true)
         .xAxis().ticks(4);
 
