@@ -2,15 +2,15 @@ $('#viz').hide();
 
 var config = {
     HXLProxyURL:'https://proxy.hxlstandard.org/data.json?strip-headers=on&url=https%3A//docs.google.com/spreadsheets/d/1QA0UGOJtk5pJ-0oY2-V0iXs21SGS5Qz51Ns8i3QP1UA/edit%23gid%3D0',
-    geomURL:'data/hti_adm2_topo.json',
-    topojson:'hti_adm2',
+    geomURL:'data/hti_adm3_topo.json',
+    topojson:'hti_adm3',
     color:'#008080',
     mapcolors:['#dddddd','#80CBC4','#26A69A','#00796B','#004D40'],
     mapboundaries:[1,2,5],
-    joinattr:'admin2name',
-    popupattr:'admin2name',
+    joinattr:'admin3name',
+    popupattr:'admin3name',
     title:'Survey of survey / Registre des evaluations de besoins HAITI ouragan Matthew',
-    description:'Description Text',
+    description:'Haiti Hurricane Matthew Survey of Surveys: Dashboard showing all published assessments covering humanitarian needs arising from Hurricane Matthew. The OCHA/UNDAC Assessment Unit welcomes all information that could complement this portal. For more information, comments or questions please email <a href="mailto:undac_haiti_assessments@undac.org">undac_haiti_assessments@undac.org</a><br />Click on the graphs and map to filter the data in the table to find the relevant surveys. Every record refers to a Commune or section communale covered by a specific assessment.',
     admlevel:'',
     weeks:true
 }
@@ -189,7 +189,7 @@ function initDashboard(data,time,geom){
                        return d['#sector+list']; 
                     },
                     function(d){
-                        if(d['#meta+url'].length!=0&&d['#meta+url'].length!=null){
+                        if(d['#meta+url']!=null&&d['#meta+url'].length!=0&&d['#meta+url'].length!=null){
                             return '<a href="'+d['#meta+url']+'">Link to report</a>'; 
                         }
                        return "No Link available"
@@ -210,7 +210,8 @@ function initDashboard(data,time,geom){
 
     var map = mapChart.map();
     
-    zoomToGeom(map,geom);
+    map.setView(new L.LatLng(18.9712, -73.2852), 8);
+    //zoomToGeom(map,geom);
 
     function unique_count(group) {
         return {
@@ -355,17 +356,20 @@ function acapsData(data){
     var output = [];
     data.forEach(function(d){
         row = {};
-        row['#date+published'] = d['created_at'];
+        row['#date+published'] = d['lead']['published_at'];
+        if(row['#date+published']==null){
+            row['#date+published'] = '2016-10-10'
+        }
         row['#meta+assessmenttitle'] = d['title'];
         row['#org+lead'] = d['lead_organization'];
-        row['#meta+url'] = '';
+        row['#meta+url'] = d['lead']['website'];
         row['#sector+list'] = [];
         for(key in d['sectors_covered']){
             row['#sector+list'].push(key);
         }
             
         row['#meta+assessmentid'] = d['id'];
-        d['areas']['Communes']['locations'].forEach(function(l){
+        d['areas']['Sections Communales']['locations'].forEach(function(l){
             row['#adm+name'] = l;
             row['#adm+code'] = l;
             var copiedObject = jQuery.extend({}, row)
@@ -375,6 +379,7 @@ function acapsData(data){
     return output;
 
 }
+
 /*
 var dataCall = $.ajax({ 
     type: 'GET', 
