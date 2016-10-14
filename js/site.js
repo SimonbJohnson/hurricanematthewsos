@@ -7,7 +7,7 @@ var config = {
     color:'#008080',
     mapcolors:['#dddddd','#80CBC4','#26A69A','#00796B','#004D40'],
     mapboundaries:[1,2,5],
-    joinattr:'admin3name',
+    joinattr:'admin3pcod',
     popupattr:'admin3name',
     title:'Survey of survey / Registre des evaluations de besoins HAITI ouragan Matthew',
     description:'Haiti Hurricane Matthew Survey of Surveys: Dashboard showing all published assessments covering humanitarian needs arising from Hurricane Matthew. The OCHA/UNDAC Assessment Unit welcomes all information that could complement this portal. For more information, comments or questions please email <a href="mailto:undac_haiti_assessments@undac.org">undac_haiti_assessments@undac.org</a><br />Click on the graphs and map to filter the data in the table to find the relevant surveys. Every record refers to a Commune or section communale covered by a specific assessment.',
@@ -174,7 +174,7 @@ function initDashboard(data,time,geom){
                 .size(650)
                 .columns([
                     function(d){
-                       return d['#date+week']; 
+                       return d['#date+show']; 
                     },
                     function(d){
                        return d['#org+lead']; 
@@ -252,15 +252,11 @@ function deriveWeeks(data){
     var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
     data.forEach(function(d){
-        console.log(d);
-        console.log('date');
-        console.log(d['#date+published']);
-        d['#date+published'] = dateFormat.parse(d['#date+published'].substring(0,10))
+        d['#date+published'] = dateFormat.parse(d['#date+published']);
     });
 
     var min = d3.min(data,function(d){return d['#date+published']});
     var max = d3.max(data,function(d){return d['#date+published']});
-    console.log(max);
     var week = getMonday(min);
     var weeks = [week.getDate()+" "+months[week.getMonth()]+" "+(week.getYear()-100)]
     while(week<max){
@@ -300,7 +296,6 @@ function deriveMonths(data){
         date.addMonths(1);
         weeks.push(months[date.getMonth()]+" "+(date.getYear()-100));
     }
-    console.log(weeks)
     return weeks;    
 }
 
@@ -325,6 +320,14 @@ function nestTag(data,tag){
         r[tag+'+list'] = list;
     });
     return data;
+}
+
+function createLookUp(features){
+    var lookup = {};
+    features.forEach(function(f,i){
+        lookup[f.properties[config.joinattr]] = f.properties[config.popupattr];
+    });
+    return lookup;
 }
 
 function hxlProxyToJSON(input,headers){
@@ -352,14 +355,18 @@ function hxlProxyToJSON(input,headers){
     return output;
 }
 
-function acapsData(data){
+function acapsData(data,lookup){
     var output = [];
     data.forEach(function(d){
         row = {};
-        row['#date+published'] = d['lead']['published_at'];
+        row['#date+published'] = d['end_data_collection'];
         if(row['#date+published']==null){
             row['#date+published'] = '2016-10-10'
         }
+        row['#date+show'] = d['end_data_collection'];
+        if(row['#date+show']==null){
+            row['#date+show'] = '2016-10-10'
+        }        
         row['#meta+assessmenttitle'] = d['title'];
         row['#org+lead'] = d['lead_organization'];
         row['#meta+url'] = d['lead']['website'];
@@ -369,8 +376,8 @@ function acapsData(data){
         }
             
         row['#meta+assessmentid'] = d['id'];
-        d['areas']['Sections Communales']['locations'].forEach(function(l){
-            row['#adm+name'] = l;
+        d['areas']['Sections Communales']['pcodes'].forEach(function(l){
+            row['#adm+name'] = lookup[l];
             row['#adm+code'] = l;
             var copiedObject = jQuery.extend({}, row)
             output.push(copiedObject);
@@ -447,8 +454,10 @@ $.when(dataCall, geomCall).then(function(dataArgs, geomArgs){
     } else {
         var geom = geomArgs[0];
     }
-    var data = acapsData(dataArgs[0]);
+    var lookup = createLookUp(geom.features);
+    var data = acapsData(dataArgs[0],lookup);
     console.log(data);
+    
     //var data= nestTag(hxlProxyToJSON(dataArgs[0]),'#sector');
     if(config.weeks){
         var weeks = deriveWeeks(data);
