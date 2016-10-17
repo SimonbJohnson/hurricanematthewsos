@@ -369,7 +369,14 @@ function acapsData(data,lookup){
         }        
         row['#meta+assessmenttitle'] = d['title'];
         row['#org+lead'] = d['lead_organization'];
-        row['#meta+url'] = d['lead']['website'];
+        if(d['lead']['url']!=null){
+            row['#meta+url'] = d['lead']['website'];
+        } else if (d['lead']['attachment']!=null){
+            row['#meta+url'] = d['lead']['attachment'][1];
+        } else {
+            row['#meta+url'] = null;
+        }
+        
         row['#sector+list'] = [];
         for(key in d['sectors_covered']){
             row['#sector+list'].push(key);
