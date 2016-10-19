@@ -370,7 +370,7 @@ function acapsData(data,lookup){
         row['#meta+assessmenttitle'] = d['title'];
         row['#org+lead'] = d['lead_organization'];
         if(d['lead']['url']!=null){
-            row['#meta+url'] = d['lead']['website'];
+            row['#meta+url'] = d['lead']['url'];
         } else if (d['lead']['attachment']!=null){
             row['#meta+url'] = d['lead']['attachment'][1];
         } else {
